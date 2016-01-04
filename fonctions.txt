@@ -1,0 +1,37 @@
+/* Fonction PL/SQL */
+
+-- 3) Fonction récupérer le nombre détudiants sans stage à une année N données
+
+CREATE OR REPLACE TYPE BODY ObStatistiqueTy IS
+MEMBER FUNCTION nonStagiaireParA (annee INTEGER) return INT IS
+nbNonStagiaire INT  :=0 ;
+    BEGIN
+    
+     SELECT COUNT (*) INTO nbNonStagiaire
+     FROM Etudiant
+     WHERE stage IS NULL				-- on fait la jointure entre la table ETUDIANT et STAGE
+     AND  EXTRACT(YEAR FROM dateStage) = annee;	        -- On l'année du stage de l'étudiant = l'année en cours
+ 
+    RETURN nbNonStagiaire;
+ END nonStagiaireParA;
+END;
+
+
+
+-- 4) Fonction pour récupérer le nombre de stagiaires pris par CHAQUE entreprise durant les n dernières années,
+
+
+-- 5) Fonction pour récupérer le nombre moyen de stagiaires dans les n dernières années,
+
+
+-- 6) Fonction pour récupérer le le nombre de stages par zone géographique choisi par l'utilisateur (département, ville),
+
+
+-- 7) Fonction pour récupérer le nombre de stages pour toutes les zones géographiques (département, ville)
+
+
+-- 8) Fonction pour récupérer toutes les entreprises et leur contact ayant eu au moins un stage dans les n dernières années.
+
+
+
+nb : EXTRACT(YEAR FROM Sysdate)

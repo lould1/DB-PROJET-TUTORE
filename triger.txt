@@ -1,0 +1,69 @@
+SET NAMES UTF8;
+
+-- Triggers
+
+-- Trigger lors d'un insert
+
+CREATE OR REPLACE TRIGGER INSERT_ETUDIANT
+	BEFORE INSERT
+	ON ETUDIANT
+	FOR EACH ROW
+BEGIN
+	-- Les etudiants doivent etre de l'annee actuelle
+	IF (:NEW.FinScol = EXTRACT(YEAR FROM Sysdate) ) THEN
+		-- Si l'etudiant est directement stagiere, la valeur stagiere est incrementee
+		IF (:NEW.Stage IS NOT NULL) THEN
+			UPDATE STATISTIQUE
+			SET Stagiaire = Stagiaire + 1;
+		-- Sinon la valeur non stagiere est incrementee
+		ELSE
+			UPDATE STATISTIQUE
+			SET nonStagiaire  = nonStagiaire + 1;
+		END IF;
+	END IF;
+END;
+
+
+-- Trigger lors d'une update
+CREATE OR REPLACE TRIGGER UPDATE_ETUDIANT
+	BEFORE UPDATE
+	ON ETUDIANT
+	FOR EACH ROW
+BEGIN
+	-- Meme chose
+	IF (:NEW.FinScol = EXTRACT(YEAR FROM Sysdate)) THEN
+		-- Si l'etudiant etait stagiere et ne l'est plus apres l'insert, maj des stats
+		IF (:OLD.Stage IS NULL AND :NEW.Stage IS NOT NULL) THEN
+			UPDATE STATISTIQUE
+			SET Stagiaire = Stagiaire + 1;
+			UPDATE STATISTIQUE
+			SET nonStagiaire = nonStagiaire - 1;
+		-- Vice versa
+  	ELSIF (:OLD.Stage IS NOT NULL AND :NEW.Stage IS NULL) THEN
+			UPDATE STATISTIQUE
+			SET Stagiaire = Stagiaire - 1;
+			UPDATE STATISTIQUE
+			SET nonStagiaire = nonStagiaire + 1;
+		END IF;
+	END IF;
+END;
+
+
+
+-- Trigger lors d'un delete
+CREATE OR REPLACE TRIGGER DELETE_ETUDIANT
+	BEFORE DELETE
+	ON ETUDIANT
+	FOR EACH ROW
+BEGIN
+	IF (:OLD.FinScol = EXTRACT(YEAR FROM Sysdate) ) THEN
+		-- Maj des statistiques
+		IF (:OLD.Stage IS NOT NULL) THEN
+			UPDATE STATISTIQUE
+			SET Stagiaire = Stagiaire - 1;
+		ELSE
+			UPDATE STATISTIQUE
+			SET NonStagiaire = NonStagiaire - 1;
+		END IF;
+	END IF;
+END;

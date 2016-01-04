@@ -1,0 +1,53 @@
+
+-- 1) Fonction récupérer le nombre d'étudiants avec stage cette année
+
+CREATE OR REPLACE TYPE BODY ObStatistiqueTy IS
+MEMBER FUNCTION stagiaireA return INT IS
+
+nbEtuStagiaire INT ; --variable retournée en fin, contient le nombr d'étudiant avec stage pour l'année en cours
+  BEGIN 
+    
+     SELECT COUNT (*) AS nbEtuStagiaire
+     FROM Etudiant, Stage
+     WHERE Etudiant.stage.num = num  		-- on fait la jointure entre la table ETUDIANT et STAGE
+     AND year(dateStage) = year(SYSDATE);	-- On l'année du stage de l'étudiant = l'année en cours
+ 
+ RETURN nbEtuStagiaire;
+  END stagiaireA;
+END;
+
+
+-- 2) Fonction récupérer le nombre d'étudiants sans stage cette année
+
+CREATE OR REPLACE TYPE BODY ObStatistiqueTy IS
+MEMBER FUNCTION nonStagiaireA return INT IS
+
+nbEtuNonStagiaire INT ; --variable retournée en fin, contient le nb d'étudiant sans stage pour l'année en cours
+  BEGIN 
+
+     SELECT COUNT (*) AS nbEtuNonStagiaire
+     FROM Etudiant
+     WHERE Stage.num IS NULL		-- On séléctionne les étudiants SANS stage
+     AND  year(SYSDATE)= FinScol	-- De l'année en cours
+
+  RETURN nbEtuNonStagiaire;
+  END nonStagiaireA;
+END;
+
+
+-- 4) Fonction pour récupérer le nombre d'étudiants pris par chaque entreprise durant les n dernières années
+
+ 
+CREATE OR REPLACE TYPE BODY ObStatistiqueTy IS
+MEMBER FUNCTION nonStagiaireParA (annee INTEGER) return INT IS
+nbNonStagiaire INT ;
+    BEGIN
+    
+     SELECT COUNT (*) INTO nbNonStagiaire
+     FROM Etudiant E, Stage S
+     WHERE E.stage.num = S.num  						-- on fait la jointure entre la table ETUDIANT et STAGE
+     AND EXTRACT(YEAR FOMR dateStage) >= EXTRACT(YEAR FROM Sysdate)- annee;	-- l'année du stage de l'étudiant est contenu dans les n dernières années
+ 
+    RETURN nbNonStagiaire;
+ END nonStagiaireParA;
+END;
